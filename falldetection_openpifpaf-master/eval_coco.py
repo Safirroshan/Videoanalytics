@@ -33,6 +33,33 @@ ANNOTATIONS_TEST = 'data-mscoco/annotations/image_info_test2017.json'
 IMAGE_DIR_TEST = 'data-mscoco/images/test2017/'
 
 LOG = logging.getLogger(__name__)
+#This the line added extra from line no 36 to 61
+class Annotation:
+    def __init__(self, keypoints, skeleton, *, category_id=1, suppress_score_index=None):
+        self.keypoints = keypoints
+        self.skeleton = skeleton
+        self.category_id = category_id
+        self.suppress_score_index = suppress_score_index
+
+        self.data = np.zeros((len(keypoints), 3), dtype=np.float32)
+        self.joint_scales = np.zeros((len(keypoints),), dtype=np.float32)
+        self.fixed_score = NOTSET
+        self.fixed_bbox = NOTSET
+        self.decoding_order = []
+        self.frontier_order = []
+
+        self.skeleton_m1 = (np.asarray(skeleton) - 1).tolist()
+
+        self.score_weights = np.ones((len(keypoints),))
+        if self.suppress_score_index:
+            self.score_weights[-1] = 0.0
+        self.score_weights[:3] = 3.0
+        self.score_weights /= np.sum(self.score_weights)
+
+    def add(self, joint_i, xyv):
+        self.data[joint_i] = xyv
+        return self
+
 
 
 class EvalCoco():
